@@ -1,10 +1,19 @@
 package transliteraion;
 
+import exceptions.ConfigNotFoundException;
+import exceptions.ErrorReadFileException;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
 /**
  * Class for convert Ukrainian name and last name to program format.
  */
 public final class Transliteration {
 
+  private static String[][] masLinks;
   private Transliteration(){}
 
   private static String convertSymbol(final String symbol) {
@@ -24,6 +33,8 @@ public final class Transliteration {
    * @return custom format string
    */
   public static String convert(final String name, final String lastname) {
+    readFile();
+
     StringBuilder resultLine = new StringBuilder();
 
     resultLine.append(convertSymbol(name.charAt(0)).toUpperCase());
@@ -35,5 +46,31 @@ public final class Transliteration {
     }
 
     return resultLine.toString();
+  }
+
+  private static void readFile() {
+    File file  = new File("src/main/resources/charChange.txt");
+    if(!file.exists() || !file.isFile()) {
+      throw new ConfigNotFoundException("File not found");
+    }
+
+    try(FileReader fr = new FileReader(file);
+        BufferedReader br = new BufferedReader(fr)) {
+      int n = 0;
+
+      String line = br.readLine();
+
+      while(line != null) {
+        n++;
+
+        line = br.readLine();
+      }
+
+      if (n != 0) {
+        masLinks = new String[3][10];
+      }
+    } catch (IOException e) {
+      throw new ErrorReadFileException(e);
+    }
   }
 }

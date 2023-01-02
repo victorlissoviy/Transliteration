@@ -1,0 +1,34 @@
+зг	zgh
+Аа	Aa
+Бб	Bb
+Вв	Vv
+Гг	Hh
+Ґґ	Gg
+Дд	Dd
+Ее	Ee
+Єє	Ye	ie
+Жж	Zhzh
+Зз	Zz
+Ии	Yy
+Іі	Ii
+Її	Yi	i
+Йй	Y	i
+Кк	Kk
+Лл	Ll
+Мм	Mm
+Нн	Nn
+Оо	Oo
+Пп	Pp
+Рр	Rr
+Сс	Ss
+Тт	Tt
+Уу	Uu
+Фф	Ff
+Хх	Khkh
+Цц	Tsts
+Чч	Chch
+Шш	Shsh
+Щщ	Shchshch
+Юю	Yu	iu
+Яя	Ya	ia
+ь,’
