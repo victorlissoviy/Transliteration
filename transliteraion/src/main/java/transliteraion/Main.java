@@ -15,8 +15,8 @@ public final class Main {
    * Main method in program.
    *
    * @param args input args:<br>
-   *             first - name<br>
-   *             second - last name
+   *             first - last name<br>
+   *             second - name
    */
   public static void main(final String[] args) {
 
@@ -25,8 +25,8 @@ public final class Main {
       return;
     }
 
-    String name = args[0];
-    String lastname = args[1];
+    String name = args[1];
+    String lastname = args[0];
 
     String result = Transliteration.convert(name, lastname);
 
