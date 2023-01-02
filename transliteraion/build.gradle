@@ -18,21 +18,13 @@ repositories {
 }
 
 dependencies {
-    // This dependency is used by the application.
-    implementation 'com.google.guava:guava:31.1-jre'
+
 }
 
 testing {
-    suites {
-        // Configure the built-in test suite
-        test {
-            // Use JUnit Jupiter test framework
-            useJUnitJupiter('5.9.1')
-        }
-    }
 }
 
 application {
     // Define the main class for the application.
-    mainClass = 'transliteraion.App'
+    mainClass = 'transliteraion.Main'
 }
