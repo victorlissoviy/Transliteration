@@ -7,14 +7,21 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class for convert Ukrainian name and last name to program format.
  */
 public final class Transliteration {
+  public static String[][] getMasLinks() {
+    return masLinks;
+  }
 
   private static String[][] masLinks;
-  private Transliteration(){}
+
+  private Transliteration() {
+  }
 
   private static String convertSymbol(final String symbol) {
 
@@ -41,7 +48,7 @@ public final class Transliteration {
     resultLine.append(convertSymbol(lastname.charAt(0)).toUpperCase());
 
     int n = lastname.length();
-    for(int i = 1; i < n; i++) {
+    for (int i = 1; i < n; i++) {
       resultLine.append(convertSymbol(lastname.charAt(i)));
     }
 
@@ -49,28 +56,35 @@ public final class Transliteration {
   }
 
   private static void readFile() {
-    File file  = new File("src/main/resources/charChange.txt");
-    if(!file.exists() || !file.isFile()) {
+    File file = new File("src/main/resources/charChange.txt");
+    if (!file.exists() || !file.isFile()) {
       throw new ConfigNotFoundException("File not found");
     }
 
-    try(FileReader fr = new FileReader(file);
-        BufferedReader br = new BufferedReader(fr)) {
-      int n = 0;
+    List<String> list = new ArrayList<>();
+
+    try (FileReader fr = new FileReader(file);
+         BufferedReader br = new BufferedReader(fr)) {
+
 
       String line = br.readLine();
 
-      while(line != null) {
-        n++;
+      while (line != null) {
+        list.add(line);
 
         line = br.readLine();
       }
 
-      if (n != 0) {
-        masLinks = new String[3][10];
-      }
     } catch (IOException e) {
       throw new ErrorReadFileException(e);
+    }
+
+    int n = list.size();
+
+    masLinks = new String[n][];
+
+    for (int i = 0; i < n; i++) {
+      masLinks[i] = list.get(i).split("\t");
     }
   }
 }
