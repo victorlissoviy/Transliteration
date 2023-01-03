@@ -82,6 +82,5 @@ class TransliterationTest {
     assertEquals("FFeodosiia", Transliteration.convert("F", "Феодосія"));
     assertEquals("RRozghon", Transliteration.convert("R", "Розгон"));
     assertEquals("ZZghorany", Transliteration.convert("Z", "Згорани"));
-
   }
 }
