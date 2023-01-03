@@ -1,12 +1,11 @@
 package transliteraion;
 
-import exceptions.ConfigNotFoundException;
 import exceptions.ErrorReadFileException;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +28,10 @@ public final class Transliteration {
     String lowSymbol = symbol.toLowerCase();
 
     String result = symbol;
+
+    if (firstSymbol) {
+      result = symbol.substring(0, 1).toUpperCase() + lowSymbol.substring(1);
+    }
 
     int n = masLinks.length;
     for (int i = 1; i < n; i++) {
@@ -69,7 +72,7 @@ public final class Transliteration {
   public static String convert(final String name, final String lastname) {
     readFile();
 
-    String prepareLastName = lastname.replace(masLinks[0][0], masLinks[0][1]);
+    String prepareLastName = lastname.toLowerCase().replace(masLinks[0][0], masLinks[0][1]);
 
     StringBuilder resultLine = new StringBuilder();
 
@@ -80,7 +83,7 @@ public final class Transliteration {
 
     firstSymbol = false;
 
-    int n = lastname.length();
+    int n = prepareLastName.length();
     for (int i = 1; i < n; i++) {
       resultLine.append(convertSymbol(prepareLastName.charAt(i)));
     }
@@ -89,24 +92,23 @@ public final class Transliteration {
   }
 
   private static void readFile() {
-    File file = new File("src/main/resources/charChange.txt");
-    if (!file.exists() || !file.isFile()) {
-      throw new ConfigNotFoundException("File not found");
-    }
 
     List<String> list = new ArrayList<>();
 
-    try (FileReader fr = new FileReader(file);
-         BufferedReader br = new BufferedReader(fr)) {
+    try (InputStream is = Transliteration.class.getResourceAsStream("/links/charChange.txt")) {
+      assert is != null;
+      try (InputStreamReader isr = new InputStreamReader(is);
+           BufferedReader br = new BufferedReader(isr)) {
 
-      String line = br.readLine();
+        String line = br.readLine();
 
-      while (line != null) {
-        list.add(line);
+        while (line != null) {
+          list.add(line);
 
-        line = br.readLine();
+          line = br.readLine();
+        }
+
       }
-
     } catch (IOException e) {
       throw new ErrorReadFileException(e);
     }
