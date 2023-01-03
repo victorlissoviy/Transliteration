@@ -1,4 +1,4 @@
-package transliteraion;
+package transliteration;
 
 import org.junit.jupiter.api.Test;
 

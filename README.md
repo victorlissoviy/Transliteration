@@ -1,4 +1,4 @@
-# Transliteraion
+# Transliteration
 
 Program transliteration Ukrainian names and last names to English.
 

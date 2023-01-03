@@ -1,4 +1,4 @@
-package transliteraion;
+package transliteration;
 
 import exceptions.ErrorReadFileException;
 
