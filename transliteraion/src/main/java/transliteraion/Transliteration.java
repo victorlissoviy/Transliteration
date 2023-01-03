@@ -19,13 +19,40 @@ public final class Transliteration {
   }
 
   private static String[][] masLinks;
+  private static boolean firstSymbol = true;
 
   private Transliteration() {
   }
 
   private static String convertSymbol(final String symbol) {
 
-    return symbol;
+    String lowSymbol = symbol.toLowerCase();
+
+    String result = symbol;
+
+    int n = masLinks.length;
+    for (int i = 1; i < n; i++) {
+
+      String[] link = masLinks[i];
+
+      if (link[0].contains(lowSymbol)) {
+
+        if (link.length == 3) {
+          if (firstSymbol) {
+            result = link[2];
+          } else {
+            result = link[1];
+          }
+        } else {
+          result = "";
+        }
+
+        break;
+      }
+
+    }
+
+    return result;
   }
 
   private static String convertSymbol(final Character symbol) {
@@ -42,14 +69,20 @@ public final class Transliteration {
   public static String convert(final String name, final String lastname) {
     readFile();
 
+    String prepareLastName = lastname.replace(masLinks[0][0], masLinks[0][1]);
+
     StringBuilder resultLine = new StringBuilder();
 
-    resultLine.append(convertSymbol(name.charAt(0)).toUpperCase());
-    resultLine.append(convertSymbol(lastname.charAt(0)).toUpperCase());
+    firstSymbol = true;
+
+    resultLine.append(convertSymbol(name.charAt(0)));
+    resultLine.append(convertSymbol(prepareLastName.charAt(0)));
+
+    firstSymbol = false;
 
     int n = lastname.length();
     for (int i = 1; i < n; i++) {
-      resultLine.append(convertSymbol(lastname.charAt(i)));
+      resultLine.append(convertSymbol(prepareLastName.charAt(i)));
     }
 
     return resultLine.toString();

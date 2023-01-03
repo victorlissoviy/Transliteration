@@ -1,34 +1,34 @@
 зг	zgh
-Аа	Aa
-Бб	Bb
-Вв	Vv
-Гг	Hh
-Ґґ	Gg
-Дд	Dd
-Ее	Ee
-Єє	Ye	ie
-Жж	Zhzh
-Зз	Zz
-Ии	Yy
-Іі	Ii
-Її	Yi	i
-Йй	Y	i
-Кк	Kk
-Лл	Ll
-Мм	Mm
-Нн	Nn
-Оо	Oo
-Пп	Pp
-Рр	Rr
-Сс	Ss
-Тт	Tt
-Уу	Uu
-Фф	Ff
-Хх	Khkh
-Цц	Tsts
-Чч	Chch
-Шш	Shsh
-Щщ	Shchshch
-Юю	Yu	iu
-Яя	Ya	ia
-ь,’
+а	a	A
+б	b	B
+в	v	V
+г	h	H
+ґ	g	G
+д	d	D
+е	e	E
+є	ie	Ye
+ж	zh	Zh
+з	z	Z
+и	y	Y
+і	i	I
+ї	i	Yi
+й	i	Y
+к	k	K
+л	l	L
+м	m	M
+н	n	N
+о	o	O
+п	p	P
+р	r	R
+с	s	S
+т	t	T
+у	u	U
+ф	f	F
+х	kh	Kh
+ц	ts	Ts
+ч	ch	Ch
+ш	sh	Sh
+щ	shch	Shch
+ю	iu	Yu
+я	ia	Ya
+ь,’'
