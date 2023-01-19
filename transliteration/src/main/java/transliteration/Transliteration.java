@@ -18,12 +18,12 @@ public final class Transliteration {
   }
 
   private static String[][] masLinks;
-  private static boolean firstSymbol = true;
+  private boolean firstSymbol = true;
 
-  private Transliteration() {
+  public Transliteration() {
   }
 
-  private static String convertSymbol(final String symbol) {
+  private String convertSymbol(final String symbol) {
 
     String lowSymbol = symbol.toLowerCase();
 
@@ -58,7 +58,7 @@ public final class Transliteration {
     return result;
   }
 
-  private static String convertSymbol(final Character symbol) {
+  private String convertSymbol(final Character symbol) {
     return convertSymbol(symbol.toString());
   }
 
@@ -69,10 +69,13 @@ public final class Transliteration {
    * @param lastname last name
    * @return custom format string
    */
-  public static String convert(final String name, final String lastname) {
-    readFile();
+  public String convert(final String name, final String lastname) {
+    if (masLinks == null) {
+      readFile();
+    }
 
-    String prepareLastName = lastname.toLowerCase().replace(masLinks[0][0], masLinks[0][1]);
+    String lowerLastName = lastname.toLowerCase();
+    String prepareLastName = lowerLastName.replace(masLinks[0][0], masLinks[0][1]);
 
     StringBuilder resultLine = new StringBuilder();
 

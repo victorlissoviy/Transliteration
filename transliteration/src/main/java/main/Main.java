@@ -1,4 +1,6 @@
-package transliteration;
+package main;
+
+import transliteration.Transliteration;
 
 /**
  * Main class program.
@@ -28,7 +30,8 @@ public final class Main {
     String name = args[1];
     String lastname = args[0];
 
-    String result = Transliteration.convert(name, lastname);
+    Transliteration tr = new Transliteration();
+    String result = tr.convert(name, lastname);
 
     System.out.println(result);
   }
