@@ -28,9 +28,9 @@ class TransliterationTest {
     assertEquals("GGorgany", tr.convert("Ґ", "Ґорґани"));
     assertEquals("DDonetsk", tr.convert("Дмитро", "Донецьк"));
     assertEquals("ORivne", tr.convert("Олег", "Рівне"));
-    assertEquals("YeYenakiieve", tr.convert("Є", "Єнакієве"));
-    assertEquals("ZhZhytomyr", tr.convert("Жанна", "Житомир"));
-    assertEquals("ZhZhezheliv", tr.convert("Жежелів", "Жежелів"));
+    assertEquals("YYenakiieve", tr.convert("Є", "Єнакієве"));
+    assertEquals("ZZhytomyr", tr.convert("Жанна", "Житомир"));
+    assertEquals("ZZhezheliv", tr.convert("Жежелів", "Жежелів"));
     assertEquals("ZZakarpattia", tr.convert("З", "Закарпаття"));
     assertEquals("KKazymyrchuk", tr.convert("К", "Казимирчук"));
     assertEquals("MMedvyn", tr.convert("М", "Медвин"));

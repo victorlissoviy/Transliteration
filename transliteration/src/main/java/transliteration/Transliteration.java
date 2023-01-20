@@ -70,9 +70,7 @@ public final class Transliteration {
    * @return custom format string
    */
   public String convert(final String name, final String lastname) {
-    if (masLinks == null) {
-      readFile();
-    }
+    readFile();
 
     String lowerLastName = lastname.toLowerCase();
     String prepareLastName = lowerLastName.replace(masLinks[0][0], masLinks[0][1]);
@@ -81,7 +79,7 @@ public final class Transliteration {
 
     firstSymbol = true;
 
-    resultLine.append(convertSymbol(name.charAt(0)));
+    resultLine.append(convertSymbol(name.charAt(0)).charAt(0));
     resultLine.append(convertSymbol(prepareLastName.charAt(0)));
 
     firstSymbol = false;
@@ -94,7 +92,10 @@ public final class Transliteration {
     return resultLine.toString();
   }
 
-  private static void readFile() {
+  private synchronized static void readFile() {
+    if (masLinks != null) {
+      return;
+    }
 
     List<String> list = new ArrayList<>();
 
