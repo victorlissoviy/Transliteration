@@ -21,3 +21,9 @@ test {
 application {
   mainClass = 'main.Main'
 }
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
+}
