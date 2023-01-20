@@ -10,22 +10,37 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class for read file and create LDAP files (.ldif).
+ */
 public class LDAPCreater {
   private final String file;
   private int id;
+  private int index;
   private final String ou;
+  private final Transliteration[] trs;
 
-  private Transliteration[] trs;
+  private final int countThreads = Runtime.getRuntime().availableProcessors();
 
   private synchronized int getId() {
     return id++;
   }
 
   private String[] fileData;
+
+  private synchronized int getIndex() {
+    return index++;
+  }
+
   public LDAPCreater(String file, int idStart, String ou) {
     this.file = file;
     this.id = idStart;
     this.ou = ou;
+
+    trs = new Transliteration[countThreads];
+    for (int i = 0; i < countThreads; i++) {
+      trs[i] = new Transliteration();
+    }
   }
 
   private void readFile() {
@@ -58,9 +73,17 @@ public class LDAPCreater {
   }
 
   private void createLDAPInfo() {
+    readFile();
 
   }
 
+  /**
+   * Function for get LDAP string for one user.
+   *
+   * @param line line about user
+   * @param i number thread
+   * @return LDAP String
+   */
   public String getOneLDAP(String line, int i) {
     int id = getId();
 
