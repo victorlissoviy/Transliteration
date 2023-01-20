@@ -99,6 +99,7 @@ public final class Transliteration {
     List<String> list = new ArrayList<>();
 
     try (InputStream is = Transliteration.class.getResourceAsStream("/links/charChange.txt")) {
+
       assert is != null;
       try (InputStreamReader isr = new InputStreamReader(is);
            BufferedReader br = new BufferedReader(isr)) {

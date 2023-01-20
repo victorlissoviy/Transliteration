@@ -9,4 +9,6 @@
  */
 
 rootProject.name = 'Transliteration'
-include('transliteration')
+include 'transliteration'
+include 'ldif'
+

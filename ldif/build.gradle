@@ -1,0 +1,23 @@
+plugins {
+  id 'application'
+}
+
+group 'org.translit'
+version '1.0'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+  implementation project(":transliteration")
+}
+
+test {
+  useJUnitPlatform()
+}
+
+application {
+  mainClass = 'main.Main'
+}
