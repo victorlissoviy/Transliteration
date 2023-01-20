@@ -1,6 +1,7 @@
 package ldapCreater;
 
 import exceptions.ReadFileException;
+import exceptions.ThreadWorkError;
 import transliteration.Transliteration;
 
 import java.io.BufferedReader;
@@ -17,6 +18,7 @@ public class LDAPCreater {
   private final String file;
   private int id;
   private int index;
+  private int sizeData;
   private final String ou;
   private final Transliteration[] trs;
 
@@ -27,6 +29,8 @@ public class LDAPCreater {
   }
 
   private String[] fileData;
+  private String[] userNames;
+  private final StringBuffer userLdifData;
 
   private synchronized int getIndex() {
     return index++;
@@ -41,6 +45,8 @@ public class LDAPCreater {
     for (int i = 0; i < countThreads; i++) {
       trs[i] = new Transliteration();
     }
+
+    userLdifData = new StringBuffer();
   }
 
   private void readFile() {
@@ -62,9 +68,9 @@ public class LDAPCreater {
       fileData = lines.toArray(new String[0]);
 
     } catch (FileNotFoundException e) {
-      error = String.format("Файл не знайдено: %s", file);
+      error = String.format("File not found: %s\n%s", file, e.getMessage());
     } catch (IOException e) {
-      error = String.format("Файл не иожливо прочитати: %s", file);
+      error = String.format("File cannot be read: %s\n%s", file, e.getMessage());
     }
 
     if (error != null) {
@@ -72,16 +78,71 @@ public class LDAPCreater {
     }
   }
 
-  private void createLDAPInfo() {
+  public void createLDAPInfo() {
     readFile();
 
+    index = 0;
+    sizeData = fileData.length;
+
+    Thread[] threads = new Thread[countThreads];
+
+    for (int i = 0; i < countThreads; i++) {
+      int finalI = i;
+
+      threads[i] = new Thread(() -> work(finalI));
+      threads[i].start();
+    }
+
+    for (Thread thread : threads) {
+      String error = null;
+
+      try {
+
+        thread.join();
+
+      } catch (InterruptedException e) {
+
+        error = String.format(
+                "Error in thread: %s",
+                e.getMessage()
+        );
+      }
+
+      if (error != null) {
+        throw new ThreadWorkError(error);
+      }
+    }
+
+  }
+
+  private synchronized boolean checkAndAddData(String LDAPData) {
+
+//    boolean check
+
+    return false;
+  }
+
+  private void work(int currentThreadIndex) {
+    while (true) {
+      int i = getIndex();
+
+      if (i >= sizeData) {
+        break;
+      }
+
+      String line = fileData[i];
+
+      String LDAPData = getOneLDAP(line, currentThreadIndex);
+
+
+    }
   }
 
   /**
    * Function for get LDAP string for one user.
    *
    * @param line line about user
-   * @param i number thread
+   * @param i    number thread
    * @return LDAP String
    */
   public String getOneLDAP(String line, int i) {
@@ -90,29 +151,27 @@ public class LDAPCreater {
     String[] lines = line.split(" ");
     String transLit = trs[i].convert(lines[1], lines[0]);
 
-    String result = String.format(
+    return String.format(
             "dn: cn=%1$s,ou=%2$s,dc=kubd,dc=kub\n" +
-            "objectClass: top\n" +
-            "objectClass: account\n" +
-            "objectClass: posixAccount\n" +
-            "objectClass: shadowAccount\n" +
-            "cn: %3$s\n" +
-            "uid: %1$s\n" +
-            "uidNumber: %4$d\n" +
-            "gidNumber: %4$d\n" +
-            "homeDirectory: /home/%1$s\n" +
-            "userPassword:\n" +
-            "loginShell: /bin/bash\n" +
-            "gecos: %1$s\n" +
-            "shadowLastChange: -1\n" +
-            "shadowMax: -1\n" +
-            "shadowWarning: 0\n",
+                    "objectClass: top\n" +
+                    "objectClass: account\n" +
+                    "objectClass: posixAccount\n" +
+                    "objectClass: shadowAccount\n" +
+                    "cn: %3$s\n" +
+                    "uid: %1$s\n" +
+                    "uidNumber: %4$d\n" +
+                    "gidNumber: %4$d\n" +
+                    "homeDirectory: /home/%1$s\n" +
+                    "userPassword:\n" +
+                    "loginShell: /bin/bash\n" +
+                    "gecos: %1$s\n" +
+                    "shadowLastChange: -1\n" +
+                    "shadowMax: -1\n" +
+                    "shadowWarning: 0\n",
             transLit,
             ou,
             line,
             id
     );
-
-    return result;
   }
 }
