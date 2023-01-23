@@ -70,21 +70,38 @@ public final class Transliteration {
    * @return custom format string
    */
   public String convert(final String name, final String lastname) {
+    return convert(name, lastname, 0);
+  }
+
+  public String convert(String name, String lastname, int count) {
     readFile();
 
-    String lowerLastName = lastname.toLowerCase();
-    String prepareLastName = lowerLastName.replace(masLinks[0][0], masLinks[0][1]);
-
     StringBuilder resultLine = new StringBuilder();
+
+    String loverName = name.toLowerCase();
+    String prepareName = loverName.replace(masLinks[0][0], masLinks[0][1]);
 
     firstSymbol = true;
 
     resultLine.append(convertSymbol(name.charAt(0)).charAt(0));
+
+    firstSymbol = false;
+
+    int n = name.length();
+    for (int i = 1; i < n; i++) {
+      resultLine.append(convertSymbol(name.charAt(i)));
+    }
+
+    String lowerLastName = lastname.toLowerCase();
+    String prepareLastName = lowerLastName.replace(masLinks[0][0], masLinks[0][1]);
+
+    firstSymbol = true;
+
     resultLine.append(convertSymbol(prepareLastName.charAt(0)));
 
     firstSymbol = false;
 
-    int n = prepareLastName.length();
+    n = prepareLastName.length();
     for (int i = 1; i < n; i++) {
       resultLine.append(convertSymbol(prepareLastName.charAt(i)));
     }

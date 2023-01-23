@@ -29,7 +29,7 @@ public class LDAPCreater {
   }
 
   private String[] fileData;
-  private String[] userNames;
+  private final List<String> userNames = new ArrayList<>();
   private final StringBuffer userLdifData;
 
   private synchronized int getIndex() {
@@ -117,9 +117,13 @@ public class LDAPCreater {
 
   private synchronized boolean checkAndAddData(String LDAPData) {
 
-//    boolean check
+    boolean notExist = !userNames.contains(LDAPData);
 
-    return false;
+    if (notExist) {
+      userNames.add(LDAPData);
+    }
+
+    return notExist;
   }
 
   private void work(int currentThreadIndex) {
@@ -151,23 +155,29 @@ public class LDAPCreater {
     String[] lines = line.split(" ");
     String transLit = trs[i].convert(lines[1], lines[0]);
 
+    boolean added = checkAndAddData(transLit);
+
+    if (!added) {
+      transLit = trs[i].convert(lines[1], lines[0]);
+    }
+
     return String.format(
             "dn: cn=%1$s,ou=%2$s,dc=kubd,dc=kub\n" +
-                    "objectClass: top\n" +
-                    "objectClass: account\n" +
-                    "objectClass: posixAccount\n" +
-                    "objectClass: shadowAccount\n" +
-                    "cn: %3$s\n" +
-                    "uid: %1$s\n" +
-                    "uidNumber: %4$d\n" +
-                    "gidNumber: %4$d\n" +
-                    "homeDirectory: /home/%1$s\n" +
-                    "userPassword:\n" +
-                    "loginShell: /bin/bash\n" +
-                    "gecos: %1$s\n" +
-                    "shadowLastChange: -1\n" +
-                    "shadowMax: -1\n" +
-                    "shadowWarning: 0\n",
+            "objectClass: top\n" +
+            "objectClass: account\n" +
+            "objectClass: posixAccount\n" +
+            "objectClass: shadowAccount\n" +
+            "cn: %3$s\n" +
+            "uid: %1$s\n" +
+            "uidNumber: %4$d\n" +
+            "gidNumber: %4$d\n" +
+            "homeDirectory: /home/%1$s\n" +
+            "userPassword:\n" +
+            "loginShell: /bin/bash\n" +
+            "gecos: %1$s\n" +
+            "shadowLastChange: -1\n" +
+            "shadowMax: -1\n" +
+            "shadowWarning: 0\n",
             transLit,
             ou,
             line,
