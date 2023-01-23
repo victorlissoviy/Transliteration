@@ -70,9 +70,18 @@ public final class Transliteration {
    * @return custom format string
    */
   public String convert(final String name, final String lastname) {
-    return convert(name, lastname, 0);
+    return convert(name, lastname, 1);
   }
 
+  /**
+   * Convert name and last name to custom format. <br>
+   * Last argument need for get custom symbols from name, min 1 element.
+   *
+   * @param name name
+   * @param lastname last name
+   * @param count count symbols from name
+   * @return custom format string
+   */
   public String convert(String name, String lastname, int count) {
     readFile();
 
@@ -84,13 +93,19 @@ public final class Transliteration {
 
     firstSymbol = true;
 
-    resultLine.append(convertSymbol(name.charAt(0)).charAt(0));
+    String transLitName = convertSymbol(name.charAt(0));
 
     firstSymbol = false;
 
-    int n = Math.min(count, prepareName.length());
-    for (int i = 1; i < n; i++) {
-      resultLine.append(convertSymbol(prepareName.charAt(i)));
+    if (count <= transLitName.length()) {
+      resultLine.append(transLitName, 0, count);
+    } else {
+      resultLine.append(transLitName);
+
+      int n = Math.min(count, prepareName.length());
+      for (int i = 1; i < n; i++) {
+        resultLine.append(convertSymbol(prepareName.charAt(i)));
+      }
     }
     //endregion
 
@@ -104,7 +119,7 @@ public final class Transliteration {
 
     firstSymbol = false;
 
-    n = prepareLastName.length();
+    int n = prepareLastName.length();
     for (int i = 1; i < n; i++) {
       resultLine.append(convertSymbol(prepareLastName.charAt(i)));
     }
