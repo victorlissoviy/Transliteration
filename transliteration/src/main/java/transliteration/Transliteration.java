@@ -70,50 +70,16 @@ public final class Transliteration {
    * @return custom format string
    */
   public String convert(final String name, final String lastname) {
-    return convert(name, lastname, 1);
-  }
-
-  /**
-   * Convert name and last name to custom format. <br>
-   * Last argument need for get custom symbols from name, min 1 element.
-   *
-   * @param name name
-   * @param lastname last name
-   * @param count count symbols from name
-   * @return custom format string
-   */
-  public String convert(String name, String lastname, int count) {
     readFile();
 
     StringBuilder resultLine = new StringBuilder();
 
-    //region create name
-    String loverName = name.toLowerCase();
-    String prepareName = loverName.replace(masLinks[0][0], masLinks[0][1]);
-
     firstSymbol = true;
 
-    String transLitName = convertSymbol(name.charAt(0));
+    resultLine.append(convertSymbol(name.charAt(0)).charAt(0));
 
-    firstSymbol = false;
-
-    if (count <= transLitName.length()) {
-      resultLine.append(transLitName, 0, count);
-    } else {
-      resultLine.append(transLitName);
-
-      int n = Math.min(count, prepareName.length());
-      for (int i = 1; i < n; i++) {
-        resultLine.append(convertSymbol(prepareName.charAt(i)));
-      }
-    }
-    //endregion
-
-    //region create last name
     String lowerLastName = lastname.toLowerCase();
     String prepareLastName = lowerLastName.replace(masLinks[0][0], masLinks[0][1]);
-
-    firstSymbol = true;
 
     resultLine.append(convertSymbol(prepareLastName.charAt(0)));
 
@@ -123,8 +89,7 @@ public final class Transliteration {
     for (int i = 1; i < n; i++) {
       resultLine.append(convertSymbol(prepareLastName.charAt(i)));
     }
-    //endregion
-
+    
     return resultLine.toString();
   }
 
