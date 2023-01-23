@@ -78,6 +78,7 @@ public final class Transliteration {
 
     StringBuilder resultLine = new StringBuilder();
 
+    //region create name
     String loverName = name.toLowerCase();
     String prepareName = loverName.replace(masLinks[0][0], masLinks[0][1]);
 
@@ -87,11 +88,13 @@ public final class Transliteration {
 
     firstSymbol = false;
 
-    int n = name.length();
+    int n = Math.min(count, prepareName.length());
     for (int i = 1; i < n; i++) {
-      resultLine.append(convertSymbol(name.charAt(i)));
+      resultLine.append(convertSymbol(prepareName.charAt(i)));
     }
+    //endregion
 
+    //region create last name
     String lowerLastName = lastname.toLowerCase();
     String prepareLastName = lowerLastName.replace(masLinks[0][0], masLinks[0][1]);
 
@@ -105,6 +108,7 @@ public final class Transliteration {
     for (int i = 1; i < n; i++) {
       resultLine.append(convertSymbol(prepareLastName.charAt(i)));
     }
+    //endregion
 
     return resultLine.toString();
   }
