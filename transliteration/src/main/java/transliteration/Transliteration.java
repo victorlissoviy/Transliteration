@@ -77,10 +77,10 @@ public final class Transliteration {
    * Convert name and last name to custom format. <br>
    * Index is number to choose format result string.
    *
-   * @param name name
+   * @param name     name
    * @param lastname lastname
-   * @param surname surname
-   * @param index index format
+   * @param surname  surname
+   * @param index    index format
    * @return custom format string
    */
   public String convert(final String name, final String lastname, String surname, int index) {
@@ -88,31 +88,25 @@ public final class Transliteration {
 
     String result;
 
-    switch (index){
+    switch (index) {
 
       case 1: {
-        result = getTransLitFirstSymbol(name)
-                + getTransLitFirstSymbol(surname)
-                + getTransLitLine(lastname);
+        result = getTransLitFirstSymbol(name) + getTransLitFirstSymbol(surname) + getTransLitLine(lastname);
         break;
       }
 
       case 2: {
-        result = getTransLitLine(name)
-                + getTransLitLine(lastname);
+        result = getTransLitLine(name) + getTransLitLine(lastname);
         break;
       }
 
       case 3: {
-        result = getTransLitLine(name)
-                + getTransLitLine(surname)
-                + getTransLitLine(lastname);
+        result = getTransLitLine(name) + getTransLitLine(surname) + getTransLitLine(lastname);
         break;
       }
 
       default:
-        result = getTransLitFirstSymbol(name)
-                + getTransLitLine(lastname);
+        result = getTransLitFirstSymbol(name) + getTransLitLine(lastname);
     }
 
     return result;
@@ -159,8 +153,7 @@ public final class Transliteration {
     try (InputStream is = Transliteration.class.getResourceAsStream("/links/charChange.txt")) {
 
       assert is != null;
-      try (InputStreamReader isr = new InputStreamReader(is);
-           BufferedReader br = new BufferedReader(isr)) {
+      try (InputStreamReader isr = new InputStreamReader(is); BufferedReader br = new BufferedReader(isr)) {
 
         String line = br.readLine();
 
