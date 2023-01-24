@@ -66,30 +66,86 @@ public final class Transliteration {
    * Convert name and last name to custom format.
    *
    * @param name     name
-   * @param lastname last name
+   * @param lastName last name
    * @return custom format string
    */
-  public String convert(final String name, final String lastname) {
+  public String convert(final String name, final String lastName) {
+    return convert(name, lastName, null, 0);
+  }
+
+  /**
+   * Convert name and last name to custom format. <br>
+   * Index is number to choose format result string.
+   *
+   * @param name name
+   * @param lastname lastname
+   * @param surname surname
+   * @param index index format
+   * @return custom format string
+   */
+  public String convert(final String name, final String lastname, String surname, int index) {
     readFile();
+
+    String result;
+
+    switch (index){
+
+      case 2: {
+        result = getTransLitFirstSymbol(name)
+                + getTransLitFirstSymbol(surname)
+                + getTransLitLine(lastname);
+        break;
+      }
+
+      case 3: {
+        result = getTransLitLine(name)
+                + getTransLitLine(lastname);
+        break;
+      }
+
+      case 4: {
+        result = getTransLitLine(name)
+                + getTransLitLine(surname)
+                + getTransLitLine(lastname);
+        break;
+      }
+
+      default:
+        result = getTransLitFirstSymbol(name)
+                + getTransLitLine(lastname);
+    }
+
+    return result;
+  }
+
+  private String getTransLitFirstSymbol(final String line) {
+    firstSymbol = true;
+
+    String result = String.valueOf(convertSymbol(line.charAt(0)).charAt(0));
+
+    firstSymbol = false;
+
+    return result;
+  }
+
+  private String getTransLitLine(final String line) {
 
     StringBuilder resultLine = new StringBuilder();
 
     firstSymbol = true;
 
-    resultLine.append(convertSymbol(name.charAt(0)).charAt(0));
+    String lowerLine = line.toLowerCase();
+    String prepareLine = lowerLine.replace(masLinks[0][0], masLinks[0][1]);
 
-    String lowerLastName = lastname.toLowerCase();
-    String prepareLastName = lowerLastName.replace(masLinks[0][0], masLinks[0][1]);
-
-    resultLine.append(convertSymbol(prepareLastName.charAt(0)));
+    resultLine.append(convertSymbol(prepareLine.charAt(0)));
 
     firstSymbol = false;
 
-    int n = prepareLastName.length();
+    int n = prepareLine.length();
     for (int i = 1; i < n; i++) {
-      resultLine.append(convertSymbol(prepareLastName.charAt(i)));
+      resultLine.append(convertSymbol(prepareLine.charAt(i)));
     }
-    
+
     return resultLine.toString();
   }
 
