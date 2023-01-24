@@ -84,4 +84,16 @@ class TransliterationTest {
     assertEquals("RRozghon", tr.convert("R", "Розгон"));
     assertEquals("ZZghorany", tr.convert("Z", "Згорани"));
   }
+
+  @Test
+  void manyConvertsTest() {
+    String name = "Віктор";
+    String lastname = "Лісовий";
+    String surname = "Юрійович";
+
+    assertEquals("VLisovyi", tr.convert(name, lastname, surname, 0));
+    assertEquals("VYLisovyi", tr.convert(name, lastname, surname, 1));
+    assertEquals("ViktorLisovyi", tr.convert(name, lastname, surname, 2));
+    assertEquals("ViktorYuriiovychLisovyi", tr.convert(name, lastname, surname, 3));
+  }
 }

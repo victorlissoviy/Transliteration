@@ -90,20 +90,20 @@ public final class Transliteration {
 
     switch (index){
 
-      case 2: {
+      case 1: {
         result = getTransLitFirstSymbol(name)
                 + getTransLitFirstSymbol(surname)
                 + getTransLitLine(lastname);
         break;
       }
 
-      case 3: {
+      case 2: {
         result = getTransLitLine(name)
                 + getTransLitLine(lastname);
         break;
       }
 
-      case 4: {
+      case 3: {
         result = getTransLitLine(name)
                 + getTransLitLine(surname)
                 + getTransLitLine(lastname);
