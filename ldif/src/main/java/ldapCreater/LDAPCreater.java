@@ -4,6 +4,7 @@ import exceptions.ReadFileException;
 import exceptions.ThreadWorkError;
 import exceptions.WriteFileException;
 import transliteration.Transliteration;
+import users.User;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class LDAPCreater {
   private final Transliteration[] trs;
   private final int countThreads = Runtime.getRuntime().availableProcessors();
   private String[] fileData;
-  private final List<String> userNames = new ArrayList<>();
+  private final List<User> users = new ArrayList<>();
   private final StringBuffer userLdifData;
 
   private synchronized int getId() {
@@ -109,6 +110,83 @@ public class LDAPCreater {
       }
     }
 
+    writeUserFile();
+    writeUserToGroupFile();
+    writeExtFile();
+  }
+
+  private void writeExtFile() {
+    String fileName = file.substring(0, file.lastIndexOf(".")) + "ext.imp";
+
+    String error = null;
+
+    try (FileWriter file = new FileWriter(fileName);
+         BufferedWriter bw = new BufferedWriter(file)) {
+
+      for (User user : users) {
+        String fullName = user.getFullName();
+        String transLitName = user.getTransLit();
+        String pass = user.getPass();
+
+        String line = String.format("%s %s %s\n", fullName, transLitName, pass);
+
+        bw.write(line);
+      }
+
+    } catch (IOException e) {
+      error = String.format(
+              "Error write to file: %s\n%s",
+              fileName,
+              e.getMessage()
+      );
+    }
+
+    if (error != null) {
+      throw new WriteFileException(error);
+    }
+  }
+
+  private void writeUserToGroupFile() {
+    String fileName = "addUserToGroup.ldif";
+
+    String error = null;
+
+    try (FileWriter file = new FileWriter(fileName);
+         BufferedWriter bw = new BufferedWriter(file)) {
+
+      String firstLines = String.format(
+              "dn: cn=debet,ou=%s,dc=kubd,dc=kub\n" +
+              "changetype: modify\n" +
+              "add: memberuid\n" +
+              "memberuid: sermozg\n" +
+              "memberuid: test\n",
+              ou
+      );
+
+      bw.write(firstLines);
+
+      for (User user : users) {
+        String transLitName = user.getTransLit();
+
+        String line = String.format("memberuid: %s\n", transLitName);
+
+        bw.write(line);
+      }
+
+    } catch (IOException e) {
+      error = String.format(
+              "Error write to file: %s\n%s",
+              fileName,
+              e.getMessage()
+      );
+    }
+
+    if (error != null) {
+      throw new WriteFileException(error);
+    }
+  }
+
+  private void writeUserFile() {
     String userFileName = "user.ldif";
     String error = null;
 
@@ -130,12 +208,12 @@ public class LDAPCreater {
     }
   }
 
-  private synchronized boolean checkAndAddData(String LDAPData) {
+  private synchronized boolean checkAndAddData(User LDAPData) {
 
-    boolean notExist = !userNames.contains(LDAPData);
+    boolean notExist = !users.contains(LDAPData);
 
     if (notExist) {
-      userNames.add(LDAPData);
+      users.add(LDAPData);
     }
 
     return notExist;
@@ -168,21 +246,22 @@ public class LDAPCreater {
     int id = getId();
 
     String[] lines = line.split(" ");
-    String transLit = null;
+    String transLitName = null;
+    String pass = genPass();
 
     int itr;
     for (itr = 0; itr < 4; itr++) {
 
-      transLit = trs[i].convert(lines[1], lines[0], lines[2], itr);
+      transLitName = trs[i].convert(lines[1], lines[0], lines[2], itr);
 
-      boolean added = checkAndAddData(transLit);
+      User user = new User(line, transLitName, pass);
+
+      boolean added = checkAndAddData(user);
 
       if (added) {
         break;
       }
     }
-
-    String pass = genPass();
 
     String result = String.format("dn: cn=%1$s,ou=%2$s,dc=kubd,dc=kub\n"
                     + "objectClass: top\n"
@@ -200,7 +279,7 @@ public class LDAPCreater {
                     + "shadowLastChange: -1\n"
                     + "shadowMax: -1\n"
                     + "shadowWarning: 0\n\n",
-            transLit, ou, line, id, pass);
+            transLitName, ou, line, id, pass);
 
     if (itr == 4) {
       writeToErrorFile(result);
