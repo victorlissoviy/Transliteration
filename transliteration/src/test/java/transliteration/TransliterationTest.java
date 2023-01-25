@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuppressWarnings("SpellCheckingInspection")
 class TransliterationTest {
   final Transliteration tr = new Transliteration();
 
