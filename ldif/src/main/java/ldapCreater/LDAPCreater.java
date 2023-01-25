@@ -8,6 +8,7 @@ import transliteration.Transliteration;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Class for read file and create LDAP files (.ldif).
@@ -181,6 +182,8 @@ public class LDAPCreater {
       }
     }
 
+    String pass = genPass();
+
     String result = String.format("dn: cn=%1$s,ou=%2$s,dc=kubd,dc=kub\n"
                     + "objectClass: top\n"
                     + "objectClass: account\n"
@@ -191,13 +194,13 @@ public class LDAPCreater {
                     + "uidNumber: %4$d\n"
                     + "gidNumber: %4$d\n"
                     + "homeDirectory: /home/%1$s\n"
-                    + "userPassword:\n"
+                    + "userPassword: %5$s\n"
                     + "loginShell: /bin/bash\n"
                     + "gecos: %1$s\n"
                     + "shadowLastChange: -1\n"
                     + "shadowMax: -1\n"
                     + "shadowWarning: 0\n\n",
-            transLit, ou, line, id);
+            transLit, ou, line, id, pass);
 
     if (itr == 4) {
       writeToErrorFile(result);
@@ -229,5 +232,28 @@ public class LDAPCreater {
     if (error != null) {
       throw new WriteFileException(error);
     }
+  }
+
+  private String genPass() {
+    StringBuilder result = new StringBuilder();
+
+    Random r = new Random();
+
+    int ra = r.nextInt(75);
+    int count = 0;
+
+    while (count < 8) {
+
+      if ((ra <= 9) || (ra >= 17 && ra <= 42) || (ra >= 49)) {
+
+        result.append((char) (ra + 48));
+
+        count++;
+      }
+
+      ra = r.nextInt(75);
+    }
+
+    return result.toString();
   }
 }
