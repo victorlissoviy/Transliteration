@@ -57,6 +57,13 @@ public class LDAPCreater {
       String line = br.readLine();
 
       while (line != null) {
+
+        line = line.trim();
+
+        while (line.contains("  ")) {
+          line = line.replace("  ", " ");
+        }
+
         lines.add(line);
 
         line = br.readLine();
