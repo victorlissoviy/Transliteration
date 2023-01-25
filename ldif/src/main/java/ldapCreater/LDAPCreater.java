@@ -196,7 +196,7 @@ public class LDAPCreater {
                     + "gecos: %1$s\n"
                     + "shadowLastChange: -1\n"
                     + "shadowMax: -1\n"
-                    + "shadowWarning: 0\n",
+                    + "shadowWarning: 0\n\n",
             transLit, ou, line, id);
 
     if (itr == 4) {
