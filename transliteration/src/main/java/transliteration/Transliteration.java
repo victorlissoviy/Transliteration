@@ -116,7 +116,16 @@ public final class Transliteration {
   private String getTransLitFirstSymbol(final String line) {
     firstSymbol = true;
 
-    String result = String.valueOf(convertSymbol(line.charAt(0)).charAt(0));
+    String result = null;
+
+    char oneSymbol = line.toLowerCase().charAt(0);
+    String convertedSymbol = convertSymbol(oneSymbol);
+
+    if (convertedSymbol != null && convertedSymbol.length() > 0) {
+
+      result = convertedSymbol.substring(0, 1);
+
+    }
 
     firstSymbol = false;
 
@@ -154,7 +163,7 @@ public final class Transliteration {
     try (InputStream is = Transliteration.class.getResourceAsStream("/links/charChange.txt")) {
 
       assert is != null;
-      try (InputStreamReader isr = new InputStreamReader(is);
+      try (InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
            BufferedReader br = new BufferedReader(isr)) {
 
         String line = br.readLine();
@@ -178,4 +187,5 @@ public final class Transliteration {
       masLinks[i] = list.get(i).split("\t");
     }
   }
+
 }

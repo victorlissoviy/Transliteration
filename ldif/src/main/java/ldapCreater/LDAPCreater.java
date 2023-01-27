@@ -7,6 +7,7 @@ import transliteration.Transliteration;
 import users.User;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -50,7 +51,10 @@ public class LDAPCreater {
   private void readFile() {
     String error = null;
 
-    try (FileReader fr = new FileReader(file); BufferedReader br = new BufferedReader(fr)) {
+    try (FileInputStream fr = new FileInputStream(file);
+         InputStream is = new BufferedInputStream(fr);
+         InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+         BufferedReader br = new BufferedReader(isr)) {
 
       List<String> lines = new ArrayList<>();
 
@@ -127,8 +131,10 @@ public class LDAPCreater {
 
     String error = null;
 
-    try (FileWriter file = new FileWriter(fileName);
-         BufferedWriter bw = new BufferedWriter(file)) {
+    try (FileOutputStream fos = new FileOutputStream(fileName);
+         OutputStream os = new BufferedOutputStream(fos);
+         OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+         BufferedWriter bw = new BufferedWriter(osw)) {
 
       for (User user : users) {
         String fullName = user.getFullName();
@@ -158,8 +164,10 @@ public class LDAPCreater {
 
     String error = null;
 
-    try (FileWriter file = new FileWriter(fileName);
-         BufferedWriter bw = new BufferedWriter(file)) {
+    try (FileOutputStream fos = new FileOutputStream(fileName);
+         OutputStream os = new BufferedOutputStream(fos);
+         OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+         BufferedWriter bw = new BufferedWriter(osw)) {
 
       String firstLines = String.format(
               "dn: cn=debet,ou=%s,dc=kubd,dc=kub\n" +
@@ -197,8 +205,10 @@ public class LDAPCreater {
     String userFileName = "users.ldif";
     String error = null;
 
-    try (FileWriter file = new FileWriter(userFileName);
-         BufferedWriter bw = new BufferedWriter(file)) {
+    try (FileOutputStream fos = new FileOutputStream(userFileName);
+         OutputStream os = new BufferedOutputStream(fos);
+         OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+         BufferedWriter bw = new BufferedWriter(osw)) {
 
       bw.write(userLdifData.toString());
 
