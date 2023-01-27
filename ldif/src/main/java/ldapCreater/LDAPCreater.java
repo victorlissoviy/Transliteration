@@ -171,10 +171,10 @@ public class LDAPCreater {
 
       String firstLines = String.format(
               "dn: cn=debet,ou=%s,dc=kubd,dc=kub\n" +
-              "changetype: modify\n" +
-              "add: memberuid\n" +
-              "memberuid: sermozg\n" +
-              "memberuid: test\n",
+                      "changetype: modify\n" +
+                      "add: memberuid\n" +
+                      "memberuid: sermozg\n" +
+                      "memberuid: test\n",
               ou
       );
 
@@ -225,62 +225,23 @@ public class LDAPCreater {
     }
   }
 
-  private synchronized boolean checkAndAddData(User LDAPData) {
+  private synchronized boolean checkAndAddData(User User) {
 
-    boolean notExist = !users.contains(LDAPData);
+    boolean notExist = !users.contains(User);
 
     if (notExist) {
-      users.add(LDAPData);
+      addUser(User);
     }
 
     return notExist;
   }
 
-  private void work(int currentThreadIndex) {
-    while (true) {
-      int i = getIndex();
+  private void addUser(User user) {
 
-      if (i >= sizeData) {
-        break;
-      }
+    int currentId = getId();
 
-      String line = fileData[i];
-
-      String LDAPData = getOneLDAP(line, currentThreadIndex);
-
-      userLdifData.append(LDAPData);
-    }
-  }
-
-  /**
-   * Function for get LDAP string for one user.
-   *
-   * @param line line about user
-   * @param i    number thread
-   * @return LDAP String
-   */
-  public String getOneLDAP(String line, int i) {
-    int id = getId();
-
-    String[] lines = line.split(" ");
-    String transLitName = null;
-    String pass = genPass();
-
-    int itr;
-    for (itr = 0; itr < 4; itr++) {
-
-      transLitName = trs[i].convert(lines[1], lines[0], lines[2], itr);
-
-      User user = new User(line, transLitName, pass);
-
-      boolean added = checkAndAddData(user);
-
-      if (added) {
-        break;
-      }
-    }
-
-    String result = String.format("dn: cn=%1$s,ou=%2$s,dc=kubd,dc=kub\n"
+    String result = String.format(
+            "dn: cn=%1$s,ou=%2$s,dc=kubd,dc=kub\n"
                     + "objectClass: top\n"
                     + "objectClass: account\n"
                     + "objectClass: posixAccount\n"
@@ -296,15 +257,61 @@ public class LDAPCreater {
                     + "shadowLastChange: -1\n"
                     + "shadowMax: -1\n"
                     + "shadowWarning: 0\n\n",
-            transLitName, ou, line, id, pass);
+            user.getTransLit(),
+            ou,
+            user.getFullName(),
+            currentId,
+            user.getPass()
+    );
 
-    if (itr == 4) {
-      writeToErrorFile(result);
+    users.add(user);
+    userLdifData.append(result);
+  }
 
-      result = "";
+  private void work(int currentThreadIndex) {
+    while (true) {
+      int i = getIndex();
+
+      if (i >= sizeData) {
+        break;
+      }
+
+      String line = fileData[i];
+
+      getOneLDAP(line, currentThreadIndex);
+    }
+  }
+
+  /**
+   * Function for get LDAP string for one user.
+   *
+   * @param line line about user
+   * @param i    number thread
+   */
+  public void getOneLDAP(String line, int i) {
+
+    String[] lines = line.split(" ");
+    String transLitName = null;
+
+    int itr;
+    for (itr = 0; itr < 4; itr++) {
+
+      transLitName = trs[i].convert(lines[1], lines[0], lines[2], itr);
+
+      String pass = genPass();
+
+      User user = new User(line, transLitName, pass);
+
+      boolean added = checkAndAddData(user);
+
+      if (added) {
+        break;
+      }
     }
 
-    return result;
+    if (itr == 4) {
+      writeToErrorFile(transLitName);
+    }
   }
 
   private void writeToErrorFile(String line) {
