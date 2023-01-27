@@ -194,7 +194,7 @@ public class LDAPCreater {
   }
 
   private void writeUserFile() {
-    String userFileName = "user.ldif";
+    String userFileName = "users.ldif";
     String error = null;
 
     try (FileWriter file = new FileWriter(userFileName);
