@@ -114,6 +114,11 @@ public final class Transliteration {
   }
 
   private String getTransLitFirstSymbol(final String line) {
+
+    if (line == null) {
+      return "";
+    }
+
     firstSymbol = true;
 
     String result = null;
@@ -133,6 +138,10 @@ public final class Transliteration {
   }
 
   private String getTransLitLine(final String line) {
+
+    if (line == null) {
+      return "";
+    }
 
     StringBuilder resultLine = new StringBuilder();
 

@@ -291,12 +291,21 @@ public class LDAPCreater {
   public void getOneLDAP(String line, int i) {
 
     String[] lines = line.split(" ");
+
+    String lastName = lines[0];
+    String name = lines[1];
+    String surName = null;
+
+    if (lines.length == 3) {
+      surName = lines[2];
+    }
+
     String transLitName = null;
 
     int itr;
     for (itr = 0; itr < 4; itr++) {
 
-      transLitName = trs[i].convert(lines[1], lines[0], lines[2], itr);
+      transLitName = trs[i].convert(name, lastName, surName, itr);
 
       String pass = genPass();
 
