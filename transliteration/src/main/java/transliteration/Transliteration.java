@@ -35,7 +35,8 @@ public final class Transliteration {
     }
 
     int n = masLinks.length;
-    for (int i = 1; i < n; i++) {
+    int i;
+    for (i = 1; i < n; i++) {
 
       String[] link = masLinks[i];
 
@@ -54,6 +55,11 @@ public final class Transliteration {
         break;
       }
 
+    }
+
+    if (i == n) {
+      firstSymbol = true;
+      result = "";
     }
 
     return result;
@@ -148,15 +154,26 @@ public final class Transliteration {
     firstSymbol = true;
 
     String lowerLine = line.toLowerCase();
-    String prepareLine = lowerLine.replace(masLinks[0][0], masLinks[0][1]);
+    String preparedLine = lowerLine.replace(masLinks[0][0], masLinks[0][1]);
 
-    resultLine.append(convertSymbol(prepareLine.charAt(0)));
+    resultLine.append(convertSymbol(preparedLine.charAt(0)));
 
     firstSymbol = false;
 
-    int n = prepareLine.length();
+    int n = preparedLine.length();
     for (int i = 1; i < n; i++) {
-      resultLine.append(convertSymbol(prepareLine.charAt(i)));
+
+      resultLine.append(convertSymbol(preparedLine.charAt(i)));
+
+      if (firstSymbol) {
+
+        i++;
+        if (i < n) {
+          resultLine.append(convertSymbol(preparedLine.charAt(i)));
+        }
+
+        firstSymbol = false;
+      }
     }
 
     return resultLine.toString();
