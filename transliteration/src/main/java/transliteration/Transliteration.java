@@ -57,7 +57,10 @@ public final class Transliteration {
 
     }
 
-    if (i == n) {
+    if (i == n
+        && (symbol.toCharArray()[0] < 64 || symbol.toCharArray()[0] > 90)
+        && (symbol.toCharArray()[0] < 97 || symbol.toCharArray()[0] > 122)) {
+
       firstSymbol = true;
       result = "";
     }
