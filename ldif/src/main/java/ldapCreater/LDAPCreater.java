@@ -356,7 +356,15 @@ public class LDAPCreater {
 
     while (count < 8) {
 
-      if ((ra <= 9) || (ra >= 17 && ra <= 42) || (ra >= 49)) {
+      if (
+              (
+                      (ra <= 9) || (ra >= 17 && ra <= 42) || (ra >= 49)
+              )
+                      && (ra != 25)
+                      && (ra != 28)
+                      && (ra != 31)
+                      && (ra != 60)
+      ) {
 
         result.append((char) (ra + 48));
 
