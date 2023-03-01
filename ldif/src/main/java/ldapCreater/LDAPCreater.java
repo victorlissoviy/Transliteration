@@ -16,364 +16,387 @@ import java.util.Random;
  * Class for read file and create LDAP files (.ldif).
  */
 public class LDAPCreater {
-  private final String file;
-  private int id;
-  private int index;
-  private int sizeData;
-  private final String ou;
-  private final Transliteration[] trs;
-  private final int countThreads = Runtime.getRuntime().availableProcessors();
-  private String[] fileData;
-  private final List<User> users = new ArrayList<>();
-  private final StringBuffer userLdifData;
+    private final String file;
+    private int id;
+    private int index;
+    private int sizeData;
+    private final String ou;
+    private final Transliteration[] trs;
+    private final int countThreads = 1;//Runtime.getRuntime().availableProcessors();
+    private String[] fileData;
+    private final List<User> users = new ArrayList<>();
+    private final StringBuffer userLdifData;
 
-  private synchronized int getId() {
-    return id++;
-  }
-
-  private synchronized int getIndex() {
-    return index++;
-  }
-
-  public LDAPCreater(String file, int idStart, String ou) {
-    this.file = file;
-    this.id = idStart;
-    this.ou = ou;
-
-    trs = new Transliteration[countThreads];
-    for (int i = 0; i < countThreads; i++) {
-      trs[i] = new Transliteration();
+    private synchronized int getId() {
+        return id++;
     }
 
-    userLdifData = new StringBuffer();
-  }
+    private synchronized int getIndex() {
+        return index++;
+    }
 
-  private void readFile() {
-    String error = null;
+    public LDAPCreater(String file, int idStart, String ou) {
+        this.file = file;
+        this.id = idStart;
+        this.ou = ou;
 
-    try (FileInputStream fr = new FileInputStream(file);
-         InputStream is = new BufferedInputStream(fr);
-         InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-         BufferedReader br = new BufferedReader(isr)) {
-
-      List<String> lines = new ArrayList<>();
-
-      String line = br.readLine();
-
-      while (line != null) {
-
-        line = line.trim();
-
-        while (line.contains("  ")) {
-          line = line.replace("  ", " ");
+        trs = new Transliteration[countThreads];
+        for (int i = 0; i < countThreads; i++) {
+            trs[i] = new Transliteration();
         }
 
-        lines.add(line);
-
-        line = br.readLine();
-      }
-
-      fileData = lines.toArray(new String[0]);
-
-    } catch (FileNotFoundException e) {
-      error = String.format("File not found: %s\n%s", file, e.getMessage());
-    } catch (IOException e) {
-      error = String.format("File cannot be read: %s\n%s", file, e.getMessage());
+        userLdifData = new StringBuffer();
     }
 
-    if (error != null) {
-      throw new ReadFileException(error);
-    }
-  }
+    private void readFile() {
+        String error = null;
 
-  /**
-   * Function for create data for user.ldif file.
-   */
-  public void createLDAPInfo() {
-    readFile();
+        try (FileInputStream fr = new FileInputStream(file);
+             InputStream is = new BufferedInputStream(fr);
+             InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader br = new BufferedReader(isr)) {
 
-    index = 0;
-    sizeData = fileData.length;
+            List<String> lines = new ArrayList<>();
 
-    Thread[] threads = new Thread[countThreads];
+            String line = br.readLine();
 
-    for (int i = 0; i < countThreads; i++) {
-      int finalI = i;
+            while (line != null) {
 
-      threads[i] = new Thread(() -> work(finalI));
-      threads[i].start();
-    }
+                line = line.replace("\t", " ");
 
-    for (Thread thread : threads) {
-      String error = null;
+                line = line.trim();
 
-      try {
+                while (line.contains("  ")) {
+                    line = line.replace("  ", " ");
+                }
 
-        thread.join();
+                String[] sublines = line.split(" ");
 
-      } catch (InterruptedException e) {
+                String firstSubLine = formatString(sublines[0]);
 
-        error = String.format("Error in thread: %s", e.getMessage());
-      }
+                StringBuilder lineBuilder = new StringBuilder(firstSubLine);
+                for(int i = 1; i < sublines.length; i++) {
 
-      if (error != null) {
-        throw new ThreadWorkError(error);
-      }
-    }
+                    String subLine = formatString(sublines[i]);
 
-    writeUserFile();
-    writeUserToGroupFile();
-    writeExtFile();
-  }
+                    lineBuilder.append(" ").append(subLine);
+                }
+                line = lineBuilder.toString();
 
-  private void writeExtFile() {
-    String fileName = file.substring(0, file.lastIndexOf(".")) + "ext.imp";
+                lines.add(line);
 
-    String error = null;
+                line = br.readLine();
+            }
 
-    try (FileOutputStream fos = new FileOutputStream(fileName);
-         OutputStream os = new BufferedOutputStream(fos);
-         OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
-         BufferedWriter bw = new BufferedWriter(osw)) {
+            fileData = lines.toArray(new String[0]);
 
-      for (User user : users) {
-        String fullName = user.getFullName();
-        String transLitName = user.getTransLit();
-        String pass = user.getPass();
+        } catch (FileNotFoundException e) {
+            error = String.format("File not found: %s\n%s", file, e.getMessage());
+        } catch (IOException e) {
+            error = String.format("File cannot be read: %s\n%s", file, e.getMessage());
+        }
 
-        String line = String.format("%s %s %s\n", fullName, transLitName, pass);
-
-        bw.write(line);
-      }
-
-    } catch (IOException e) {
-      error = String.format(
-              "Error write to file: %s\n%s",
-              fileName,
-              e.getMessage()
-      );
+        if (error != null) {
+            throw new ReadFileException(error);
+        }
     }
 
-    if (error != null) {
-      throw new WriteFileException(error);
-    }
-  }
+    /**
+     * Function for create data for user.ldif file.
+     */
+    public void createLDAPInfo() {
+        readFile();
 
-  private void writeUserToGroupFile() {
-    String fileName = "addUserToGroup.ldif";
+        index = 0;
+        sizeData = fileData.length;
 
-    String error = null;
+        Thread[] threads = new Thread[countThreads];
 
-    try (FileOutputStream fos = new FileOutputStream(fileName);
-         OutputStream os = new BufferedOutputStream(fos);
-         OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
-         BufferedWriter bw = new BufferedWriter(osw)) {
+        for (int i = 0; i < countThreads; i++) {
+            int finalI = i;
 
-      String firstLines = String.format(
-              "dn: cn=debet,ou=%s,dc=kubd,dc=kub\n" +
-                      "changetype: modify\n" +
-                      "add: memberuid\n" +
-                      "memberuid: sermozg\n" +
-                      "memberuid: test\n",
-              ou
-      );
+            threads[i] = new Thread(() -> work(finalI));
+            threads[i].start();
+        }
 
-      bw.write(firstLines);
+        for (Thread thread : threads) {
+            String error = null;
 
-      for (User user : users) {
-        String transLitName = user.getTransLit();
+            try {
 
-        String line = String.format("memberuid: %s\n", transLitName);
+                thread.join();
 
-        bw.write(line);
-      }
+            } catch (InterruptedException e) {
 
-    } catch (IOException e) {
-      error = String.format(
-              "Error write to file: %s\n%s",
-              fileName,
-              e.getMessage()
-      );
+                error = String.format("Error in thread: %s", e.getMessage());
+            }
+
+            if (error != null) {
+                throw new ThreadWorkError(error);
+            }
+        }
+
+        writeUserFile();
+        writeUserToGroupFile();
+        writeExtFile();
     }
 
-    if (error != null) {
-      throw new WriteFileException(error);
-    }
-  }
+    private void writeExtFile() {
+        String fileName = file.substring(0, file.lastIndexOf(".")) + "ext.imp";
 
-  private void writeUserFile() {
-    String userFileName = "users.ldif";
-    String error = null;
+        String error = null;
 
-    try (FileOutputStream fos = new FileOutputStream(userFileName);
-         OutputStream os = new BufferedOutputStream(fos);
-         OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
-         BufferedWriter bw = new BufferedWriter(osw)) {
+        try (FileOutputStream fos = new FileOutputStream(fileName);
+             OutputStream os = new BufferedOutputStream(fos);
+             OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+             BufferedWriter bw = new BufferedWriter(osw)) {
 
-      bw.write(userLdifData.toString());
+            for (User user : users) {
+                String fullName = user.getFullName();
+                String transLitName = user.getTransLit();
+                String pass = user.getPass();
 
-    } catch (IOException e) {
-      error = String.format(
-              "Error write to file: %s\n%s",
-              userFileName,
-              e.getMessage()
-      );
-    }
+                String line = String.format("%s %s %s\n", fullName, transLitName, pass);
 
-    if (error != null) {
-      throw new WriteFileException(error);
-    }
-  }
+                bw.write(line);
+            }
 
-  private synchronized boolean checkAndAddData(User User) {
+        } catch (IOException e) {
+            error = String.format(
+                    "Error write to file: %s\n%s",
+                    fileName,
+                    e.getMessage()
+            );
+        }
 
-    boolean notExist = !users.contains(User);
-
-    if (notExist) {
-      addUser(User);
+        if (error != null) {
+            throw new WriteFileException(error);
+        }
     }
 
-    return notExist;
-  }
+    private void writeUserToGroupFile() {
+        String fileName = "addUserToGroup.ldif";
 
-  private void addUser(User user) {
+        String error = null;
 
-    int currentId = getId();
+        try (FileOutputStream fos = new FileOutputStream(fileName);
+             OutputStream os = new BufferedOutputStream(fos);
+             OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+             BufferedWriter bw = new BufferedWriter(osw)) {
 
-    String result = String.format(
-            "dn: cn=%1$s,ou=%2$s,dc=kubd,dc=kub\n"
-                    + "objectClass: top\n"
-                    + "objectClass: account\n"
-                    + "objectClass: posixAccount\n"
-                    + "objectClass: shadowAccount\n"
-                    + "cn: %3$s\n"
-                    + "uid: %1$s\n"
-                    + "uidNumber: %4$d\n"
-                    + "gidNumber: %4$d\n"
-                    + "homeDirectory: /home/%1$s\n"
-                    + "userPassword: %5$s\n"
-                    + "loginShell: /bin/bash\n"
-                    + "gecos: %1$s\n"
-                    + "shadowLastChange: -1\n"
-                    + "shadowMax: -1\n"
-                    + "shadowWarning: 0\n\n",
-            user.getTransLit(),
-            ou,
-            user.getFullName(),
-            currentId,
-            user.getPass()
-    );
+            String firstLines = String.format(
+                    "dn: cn=debet,ou=%s,dc=kubd,dc=kub\n" +
+                            "changetype: modify\n" +
+                            "add: memberuid\n" +
+                            "memberuid: sermozg\n" +
+                            "memberuid: test\n",
+                    ou
+            );
 
-    users.add(user);
-    userLdifData.append(result);
-  }
+            bw.write(firstLines);
 
-  private void work(int currentThreadIndex) {
-    while (true) {
-      int i = getIndex();
+            for (User user : users) {
+                String transLitName = user.getTransLit();
 
-      if (i >= sizeData) {
-        break;
-      }
+                String line = String.format("memberuid: %s\n", transLitName);
 
-      String line = fileData[i];
+                bw.write(line);
+            }
 
-      getOneLDAP(line, currentThreadIndex);
-    }
-  }
+        } catch (IOException e) {
+            error = String.format(
+                    "Error write to file: %s\n%s",
+                    fileName,
+                    e.getMessage()
+            );
+        }
 
-  /**
-   * Function for get LDAP string for one user.
-   *
-   * @param line line about user
-   * @param i    number thread
-   */
-  public void getOneLDAP(String line, int i) {
-
-    String[] lines = line.split(" ");
-
-    String lastName = lines[0];
-    String name = lines[1];
-    String surName = null;
-
-    if (lines.length == 3) {
-      surName = lines[2];
+        if (error != null) {
+            throw new WriteFileException(error);
+        }
     }
 
-    String transLitName = null;
+    private void writeUserFile() {
+        String userFileName = "users.ldif";
+        String error = null;
 
-    int itr;
-    for (itr = 0; itr < 4; itr++) {
+        try (FileOutputStream fos = new FileOutputStream(userFileName);
+             OutputStream os = new BufferedOutputStream(fos);
+             OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+             BufferedWriter bw = new BufferedWriter(osw)) {
 
-      transLitName = trs[i].convert(name, lastName, surName, itr);
+            bw.write(userLdifData.toString());
 
-      String pass = genPass();
+        } catch (IOException e) {
+            error = String.format(
+                    "Error write to file: %s\n%s",
+                    userFileName,
+                    e.getMessage()
+            );
+        }
 
-      User user = new User(line, transLitName, pass);
-
-      boolean added = checkAndAddData(user);
-
-      if (added) {
-        break;
-      }
+        if (error != null) {
+            throw new WriteFileException(error);
+        }
     }
 
-    if (itr == 4) {
-      writeToErrorFile(transLitName);
-    }
-  }
+    private synchronized boolean checkAndAddData(User User) {
 
-  private void writeToErrorFile(String line) {
+        boolean notExist = !users.contains(User);
 
-    String errorFileName = "errors.txt";
-    String error = null;
+        if (notExist) {
+            addUser(User);
+        }
 
-    try (FileWriter file = new FileWriter(errorFileName, true);
-         BufferedWriter bw = new BufferedWriter(file)) {
-
-      bw.write(line);
-
-    } catch (IOException e) {
-      error = String.format(
-              "Error write to file: %s\n%s",
-              errorFileName,
-              e.getMessage()
-      );
+        return notExist;
     }
 
-    if (error != null) {
-      throw new WriteFileException(error);
+    private void addUser(User user) {
+
+        int currentId = getId();
+
+        String result = String.format(
+                "dn: cn=%1$s,ou=%2$s,dc=kubd,dc=kub\n"
+                        + "objectClass: top\n"
+                        + "objectClass: account\n"
+                        + "objectClass: posixAccount\n"
+                        + "objectClass: shadowAccount\n"
+                        + "cn: %3$s\n"
+                        + "uid: %1$s\n"
+                        + "uidNumber: %4$d\n"
+                        + "gidNumber: %4$d\n"
+                        + "homeDirectory: /home/%1$s\n"
+                        + "userPassword: %5$s\n"
+                        + "loginShell: /bin/bash\n"
+                        + "gecos: %1$s\n"
+                        + "shadowLastChange: -1\n"
+                        + "shadowMax: -1\n"
+                        + "shadowWarning: 0\n\n",
+                user.getTransLit(),
+                ou,
+                user.getFullName(),
+                currentId,
+                user.getPass()
+        );
+
+        users.add(user);
+        userLdifData.append(result);
     }
-  }
 
-  private String genPass() {
-    StringBuilder result = new StringBuilder();
+    private void work(int currentThreadIndex) {
+        while (true) {
+            int i = getIndex();
 
-    Random r = new Random();
+            if (i >= sizeData) {
+                break;
+            }
 
-    int ra = r.nextInt(75);
-    int count = 0;
+            String line = fileData[i];
 
-    while (count < 8) {
-
-      if (
-              (
-                      (ra <= 9) || (ra >= 17 && ra <= 42) || (ra >= 49)
-              )
-                      && (ra != 25)
-                      && (ra != 28)
-                      && (ra != 31)
-                      && (ra != 60)
-      ) {
-
-        result.append((char) (ra + 48));
-
-        count++;
-      }
-
-      ra = r.nextInt(75);
+            getOneLDAP(line, currentThreadIndex);
+        }
     }
 
-    return result.toString();
-  }
+    /**
+     * Function for get LDAP string for one user.
+     *
+     * @param line line about user
+     * @param i    number thread
+     */
+    public void getOneLDAP(String line, int i) {
+
+        String[] lines = line.split(" ");
+
+        String lastName = lines[0];
+        String name = lines[1];
+        String surName = null;
+
+        if (lines.length == 3) {
+            surName = lines[2];
+        }
+
+        String transLitName = null;
+
+        int itr;
+        for (itr = 0; itr < 4; itr++) {
+
+            transLitName = trs[i].convert(name, lastName, surName, itr);
+
+            String pass = genPass();
+
+            User user = new User(line, transLitName, pass);
+
+            boolean added = checkAndAddData(user);
+
+            if (added) {
+                break;
+            }
+        }
+
+        if (itr == 4) {
+            writeToErrorFile(transLitName);
+        }
+    }
+
+    private void writeToErrorFile(String line) {
+
+        String errorFileName = "errors.txt";
+        String error = null;
+
+        try (FileWriter file = new FileWriter(errorFileName, true);
+             BufferedWriter bw = new BufferedWriter(file)) {
+
+            bw.write(line);
+
+        } catch (IOException e) {
+            error = String.format(
+                    "Error write to file: %s\n%s",
+                    errorFileName,
+                    e.getMessage()
+            );
+        }
+
+        if (error != null) {
+            throw new WriteFileException(error);
+        }
+    }
+
+    private String genPass() {
+        StringBuilder result = new StringBuilder();
+
+        Random r = new Random();
+
+        int ra = r.nextInt(75);
+        int count = 0;
+
+        while (count < 8) {
+
+            if (
+                    (
+                            (ra <= 9) || (ra >= 17 && ra <= 42) || (ra >= 49)
+                    )
+                            && (ra != 25)
+                            && (ra != 28)
+                            && (ra != 31)
+                            && (ra != 60)
+            ) {
+
+                result.append((char) (ra + 48));
+
+                count++;
+            }
+
+            ra = r.nextInt(75);
+        }
+
+        return result.toString();
+    }
+
+    private String formatString(final String line) {
+        String result = line.substring(0, 1).toUpperCase();
+
+        result += line.substring(1).toLowerCase();
+
+        return result;
+    }
 }
